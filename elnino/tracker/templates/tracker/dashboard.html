@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>El Niño Tracker</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+    <h1>Niño 3.4 Anomaly</h1>
+    <div id="chart" style="width:100%; height:600px;"></div>
+
+    <script>
+        fetch("/api/nino34/")
+            .then(res => res.json())
+            .then(data => {
+                const x = data.map(d => `${d.year}-${String(d.month).padStart(2, '0')}-01`);
+                const y = data.map(d => d.anomaly);
+
+                const trace = { x: x, y: y, type: "scatter", mode: "lines", name: "Niño 3.4" };
+
+                const layout = {
+                    title: "Niño 3.4 Anomaly Over Time",
+                    xaxis: {
+                        title: "Year",
+                        type: "date",
+                        tickformat: "%Y",
+                        dtick: "M60"   // show a label every 5 years instead of every year
+                            
+                    },
+                    yaxis: {
+                        title: "Anomaly (°C)"
+                    },
+                    shapes: [
+                        { type: "line", x0: x[0], x1: x[x.length-1], y0: 0.5, y1: 0.5,
+                          line: { color: "orange", dash: "dash" } },
+                        { type: "line", x0: x[0], x1: x[x.length-1], y0: 2.0, y1: 2.0,
+                          line: { color: "red", dash: "dash" } }
+                    ],
+                    annotations: [
+                        { x: x[x.length-1], y: 0.5, xref: "x", yref: "y",
+                          text: "El Niño threshold", showarrow: false,
+                          font: { color: "orange" }, xanchor: "left" },
+                        { x: x[x.length-1], y: 2.0, xref: "x", yref: "y",
+                          text: "Very strong", showarrow: false,
+                          font: { color: "red" }, xanchor: "left" }
+                    ]
+                };
+
+                Plotly.newPlot("chart", [trace], layout);
+            });
+    </script>
+</body>
+</html>
